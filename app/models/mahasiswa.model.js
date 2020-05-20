@@ -1,12 +1,15 @@
 module.exports = (sequelize, Sequelize) => {
     const Mahasiswa = sequelize.define('mahasiswa', {
         nim:{
-            type: Sequelize.STRING
+            type: Sequelize.STRING,
         },
         nama: {
             type: Sequelize.STRING
         },
         alamat: {
+            type: Sequelize.STRING
+        },
+        foto: {
             type: Sequelize.STRING
         },
         poin: {

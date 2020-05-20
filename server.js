@@ -2,8 +2,16 @@ const express       = require('express')
 const bodyParser    = require('body-parser')
 const cors          = require('cors')
 const jwt           = require('jsonwebtoken')
+const fileUpload    = require('express-fileupload');
+const md5           = require('md5');
+const { check, validationResult } = require('express-validator');
 
 const app = express()
+
+app.use(fileUpload())
+
+//use static public path
+app.use(express.static('public'))
 
 //inisialisasi index model
 const db = require('./app/models')
@@ -83,6 +91,34 @@ app.post('/api/jwt/login', (req, res) => {
     })
 })
 
+//  fungsi upload file
+app.post('/api/upload', [
+        check('nim').isEmail(),
+    ], (req, res) => {
+
+    const errors = validationResult(req);
+    
+    if (!errors.isEmpty()) {
+        return res.status(422).send({ errors: errors.array() });
+    }
+
+    if (!req.files || Object.keys(req.files).length === 0) {
+      return res.status(400).send('No files were uploaded.');
+    }
+  
+    // The name of the input field (i.e. "sampleFile") is used to retrieve the uploaded file
+    let sampleFile = req.files.sampleFile;
+    let sampleName = sampleFile.name;
+    // return res.send(sampleName)
+    // Use the mv() method to place the file somewhere on your server
+    sampleFile.mv('./app/uploads/'+sampleName, function(err) {
+      if (err)
+        return res.status(500).send(err);
+  
+      res.send('File uploaded!');
+    });
+  });
+
 //format of token
 //auhtorization: Bearer <access_token>
 
@@ -112,6 +148,8 @@ function verifyToken(req, res, next) {
 require('./app/routes/mahasiswa.routes')(app)
 require('./app/routes/dosen.router')(app)
 require('./app/routes/jabatan.router')(app)
+require('./app/routes/user.router')(app)
+require('./app/routes/login.router')(app)
 
 const PORT = process.env.PORT || 8080
 
